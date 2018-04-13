@@ -43,7 +43,14 @@ struct
     List.fold_right ajoute_si_unique (l1 @ l2) []
     
   
-(*  let prod l1 l2 = *)
+  (* 10pts *)
+  (* @Fonction    : prod : 'a list list -> 'a list list -> 'a list list *)
+  (* @Description : Effectue le produit (union) des sous-listes des deux listes entre elles *)
+  let prod l1 l2 = 
+    let iter_liste l acc =
+      (List.fold_right (fun l' acc' -> [(union l l')] @ acc') l2 []) @ acc
+    in
+    List.fold_right iter_liste l1 []
     
       
 
