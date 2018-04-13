@@ -27,8 +27,25 @@
 (******************************************************************************)
 (* Implantation                                                               *)
 (******************************************************************************)
-module Resolution : RESOLUTION = 
+module Resolution = (* : RESOLUTION = *)
 struct
+
+  (* 7pts *)
+  (* @Fonction    : union : 'a list -> 'a list -> 'a list *)
+  (* @Description : Fait l'union de deux listes. La liste retournée ne contient pas de doublons et l'ordre n'importe pas *)
+  let union l1 l2 = 
+    let ajoute_si_unique e acc = 
+      if List.mem e acc then
+        acc
+      else
+        e :: acc
+    in
+    List.fold_right ajoute_si_unique (l1 @ l2) []
+    
+  
+(*  let prod l1 l2 = *)
+    
+      
 
 (* Seul espace où implanter le code du TP2 *)
 
