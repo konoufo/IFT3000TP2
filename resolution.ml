@@ -30,7 +30,7 @@
 module Resolution = (* : RESOLUTION = *)
 struct
 
-  (* 7pts *)
+  (* 7pts - David Martel *)
   (* @Fonction    : union : 'a list -> 'a list -> 'a list *)
   (* @Description : Fait l'union de deux listes. La liste retournée ne contient pas de doublons et l'ordre n'importe pas *)
   let union l1 l2 = 
@@ -43,7 +43,7 @@ struct
     List.fold_right ajoute_si_unique (l1 @ l2) []
     
   
-  (* 10pts *)
+  (* 10pts - David Martel *)
   (* @Fonction    : prod : 'a list list -> 'a list list -> 'a list list *)
   (* @Description : Effectue le produit (union) des sous-listes des deux listes entre elles *)
   let prod l1 l2 = 
@@ -51,6 +51,29 @@ struct
       (List.fold_right (fun l' acc' -> [(union l l')] @ acc') l2 []) @ acc
     in
     List.fold_right iter_liste l1 []
+    
+  
+  (* 15pts - David Martel *)
+  (* @Fonction    : paires : 'a list -> (('a * 'a) * 'a list) list *)
+  (* @Description : Associe chaque éléments en paires avec le reste des éléments non utilisés *)
+  let paires l =  
+    let liste_sans e e' =
+      List.fold_right (fun e'' acc'' -> if e <> e'' && e' <> e'' then [e''] @ acc'' else acc'') l []
+    in
+    let iter_liste e acc =
+      let associer e' acc' = 
+        let rec equivalent_existant l' = match l' with
+          | []                    -> false
+          | ((et, et'), _) :: l'' -> (e = et && e' = et') || (e = et' && e' = et) || equivalent_existant l''
+        in
+        if e' <> e && not (equivalent_existant acc) then
+          [((e', e), liste_sans e e')] @ acc'
+        else
+          acc'
+      in
+      (List.fold_right associer l []) @ acc
+    in
+    List.fold_right iter_liste l []
     
       
 
