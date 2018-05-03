@@ -27,9 +27,8 @@
 (******************************************************************************)
 (* Implantation                                                               *)
 (******************************************************************************)
-module Resolution : RESOLUTION = 
+module Resolution = (* : RESOLUTION = *)
 struct
-
   include TypesUtiles
   open List
   
