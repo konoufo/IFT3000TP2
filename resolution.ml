@@ -30,7 +30,96 @@
 module Resolution : RESOLUTION = 
 struct
 
-(* Seul espace où implanter le code du TP2 *)
+  include TypesUtiles
+  open List
+  
+  (* @Fonction      : union : a' list -> a' list -> a' list                   *)
+  (* @Description   : à partir de deux listes, crée une liste contenant les éléments des deux listes.                 *)
+  (* @Precondition  : aucune                                                  *)
+  (* @Postcondition :  la liste résultant est sans doublon.                   *)
+  let union l1 l2 = 
+    fold_left (fun l -> fun x -> if mem x l then l else l@[x]) [] (l1@l2)
+
+  (* @Fonction      : prod : a' list list -> a' list list -> a' list list                   *)
+  (* @Description   : combine par union chaque sous-liste d'une liste avec ceux d'une autre *)
+  (* @Precondition  : aucune                                                                *)
+  (* @Postcondition : aucune                                                                *)
+  let prod l1 l2 =
+    let f l s1 = fold_left (fun l -> fun s2 -> union l [union s1 s2]) l l2 in
+    fold_left f [] l1
+
+  (* @Fonction      : paires : a' list -> (a' * a') * (a' list) list                        *)
+  (* @Description   : combine chaque paire d'éléments de liste avec la liste privée des éléments de la paire   *)
+  (* @Precondition  : aucune                                                                *)
+  (* @Postcondition : aucune                                                                *)
+  let paires lst = 
+    let exc l i = fun j -> filter (fun x -> x <> i && x <> j) l in
+    let rec f r = if r == [] then [] else
+      let i = hd r and queue_lst = tl r and lst_sans = exc lst (hd r) in
+      union (fold_left (fun l -> fun x -> l @ [((i, x), lst_sans x)]) [] queue_lst) (f queue_lst) in
+    f lst  
+
+  (* @Fonction      : enonce2proposition : a' list * a' -> proposition          *)
+  (* @Description   : traduit un énoncé de problème en une proposition unique   *)
+  (* @Precondition  : aucune                                                                *)
+  (* @Postcondition : aucune                                                                *)
+  let enonce2proposition enonce =
+  fold_right (fun e -> fun p -> Et(e, p)) (fst enonce) (Non(snd enonce))
+
+  (* @Fonction      : mfc : proposition -> proposition list list          *)
+  (* @Description   : déconstruit une proposition en une liste de clauses   *)
+  (* @Precondition  : aucune                                                                *)
+  (* @Postcondition : pas de clauses doublons. *)
+  let rec mfc prop = match prop with
+  | Vrai -> []
+  | Faux -> [[]]
+  | Var(x) -> [[Var(x)];]
+  | Et(p, p') -> union (mfc p) (mfc p')
+  | Ou(p, p') -> prod (mfc p) (mfc p')
+  | Imp(p, p') -> mfc (Ou(Non(p), p'))
+  | Equ(p, p') -> mfc (Et(Imp(p, p'), Imp(p', p)))
+  | Non(Vrai) -> mfc Faux
+  | Non(Faux) -> mfc Vrai
+  | Non(Var(x)) -> [[Non(Var(x))];]
+  | Non(Et(p, p')) -> mfc (Ou(Non(p), Non(p')))
+  | Non(Ou(p, p')) -> mfc (Et(Non(p), Non(p')))
+  | Non(Imp(p, p')) -> mfc (Non(Ou(Non(p), p')))
+  | Non(Equ(p, p')) -> mfc (Equ(Non(p), p'))
+  | Non(Non(p)) -> mfc p
+
+  (* @Fonction      : opp : proposition * proposition -> bool          *)
+  (* @Description   : Vérifie si deux propositons sont les négations l'une de l'autre   *)
+  (* @Precondition  : les propositions sont soit d'un type proposition autre que "Non(_)" ou alors d'un type "Non(_)" simple. *)
+  (* @Postcondition : aucune *)
+  let opp p p' = (p = Non(p')) || (p' = Non(p))
+
+  let resolutions c c' =
+  fold_left (fun l -> fun ((x, y), r) -> if opp x y then l@[r] else l) [] (paires(union c c'))
+
+  (* @Fonction      : dev_once : forme_clause -> forme_clause          *)
+  (* @Description   : développe toutes les résolutions possibles entre les clauses d'une forme clausale   *)
+  (* @Precondition  : aucune                                                                *)
+  (* @Postcondition : aucune *)
+  let dev_once fc =
+    let elim c = fold_left (fun v -> fun ((p, p'), _) -> not (opp p p') && v) true (paires c) in
+    let simp fc = filter elim fc in
+  fold_left (fun l -> fun ((c, c'), _) -> resolutions c c' @ l) [] (paires(simp fc))
+
+  let decision prop =
+    let rec dev fc = 
+    let fc' = dev_once fc in
+    if mem [] fc || mem [] fc' then true else if union fc' fc = fc then false else
+    dev (union fc' fc) in
+  dev (mfc prop)
+
+  let decisionTrace prop = 
+    let rec trace fc lst =
+    let fc' = dev_once fc in
+    let step = union fc' fc in
+    if mem [] step then Some (lst @ [[fc] @ [fc']]) else
+    if step = fc then None else
+    trace step (lst @ [fc])  in
+  trace (mfc prop) []
 
 end;;
 

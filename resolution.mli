@@ -23,4 +23,5 @@ sig
   (*(20 pts)*) val resolutions : clause -> clause -> clause list
   (*(20 pts)*) val decision : proposition -> bool
   (*(10 pts)*) val decisionTrace : proposition -> forme_clausale list option
+  val dev_once : forme_clausale -> forme_clausale
 end
